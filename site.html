@@ -11,10 +11,13 @@
             margin: auto;
             padding: 10px;
         }
+        .gradient {
+            background: linear-gradient(45deg, #f3e5f5, #e1bee7);
+        }
     </style>
 </head>
 <body class="bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 min-h-screen flex items-center justify-center">
-    <div class="bg-white shadow-lg overflow-hidden sm:rounded-lg p-10 w-1/2">
+    <div class="gradient shadow-lg overflow-hidden sm:rounded-lg p-10 w-full sm:w-3/4 md:w-1/2 lg:w-1/3">
         <h2 class="text-center text-4xl font-bold mb-5">Interest Calculator</h2>
         <div class="mb-5">
             <p>Select the value you want to calculate:</p>
@@ -45,6 +48,7 @@
             Reset
         </button>
     </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/10.4.0/math.min.js"></script>
 
     <script>
         const principal = document.getElementById('principal');
@@ -53,23 +57,23 @@
         const total = document.getElementById('total');
         const reset = document.getElementById('reset');
         const radios = document.getElementsByName('calculate');
-
+    
         let calculationTarget = '';
-
+    
         // Listen for radio selection
         for (let i = 0; i < radios.length; i++) {
             radios[i].addEventListener('change', function() {
                 calculationTarget = this.value;
             });
         }
-
-        // Calculate total amount
+    
+        // Calculate values
         const calcValue = () => {
             const p = parseFloat(principal.value);
             const r = parseFloat(rate.value) / 100;
             const t = parseFloat(days.value);
-            const totalAmount = p * Math.pow((1 + r), t);
-
+            let totalAmount;
+    
             switch(calculationTarget) {
                 case 'principal':
                     principal.value = (total.value / Math.pow((1 + r), t)).toFixed(2);
@@ -78,20 +82,22 @@
                     days.value = Math.log(total.value / p) / Math.log(1 + r);
                     break;
                 case 'rate':
-                    rate.value = Math.pow((total.value / p), (1 / t)) - 1;
+                    let totalAmount = parseFloat(total.value);
+                    rate.value = ((Math.pow(totalAmount / p, 1 / t) - 1) * 100).toFixed(2);
                     break;
                 case 'total':
+                    totalAmount = p * Math.pow((1 + r), t);
                     total.value = totalAmount.toFixed(2);
                     break;
             }
         };
-
+    
         // Add event listeners
         principal.addEventListener('input', calcValue);
         days.addEventListener('input', calcValue);
         rate.addEventListener('input', calcValue);
         total.addEventListener('input', calcValue);
-
+    
         // Reset fields
         reset.addEventListener('click', () => {
             principal.value = '';
@@ -104,5 +110,6 @@
             calculationTarget = '';
         });
     </script>
+    
 </body>
 </html>
