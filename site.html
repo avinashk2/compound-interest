@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interest Calculator</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.16/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        .input-field {
+            width: 90%;
+            margin: auto;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 min-h-screen flex items-center justify-center">
+    <div class="bg-white shadow-lg overflow-hidden sm:rounded-lg p-10 w-1/2">
+        <h2 class="text-center text-4xl font-bold mb-5">Interest Calculator</h2>
+        <div class="mb-5">
+            <p>Select the value you want to calculate:</p>
+            <div>
+                <input type="radio" id="calc-principal" name="calculate" value="principal">
+                <label for="calc-principal">Principal Amount</label><br>
+                <input type="radio" id="calc-days" name="calculate" value="days">
+                <label for="calc-days">Days</label><br>
+                <input type="radio" id="calc-rate" name="calculate" value="rate">
+                <label for="calc-rate">Daily Compound Interest Rate</label><br>
+                <input type="radio" id="calc-total" name="calculate" value="total">
+                <label for="calc-total">Total Amount</label>
+            </div>
+        </div>
+        <div class="input-field">
+            <input type="number" id="principal" placeholder="Principal Amount" class="form-input mt-1 block w-full text-2xl p-3">
+        </div>
+        <div class="input-field">
+            <input type="number" id="days" placeholder="Days" class="form-input mt-1 block w-full text-2xl p-3">
+        </div>
+        <div class="input-field">
+            <input type="number" id="rate" placeholder="Daily Compound Interest Rate (%)" class="form-input mt-1 block w-full text-2xl p-3">
+        </div>
+        <div class="input-field">
+            <input type="number" id="total" placeholder="Total Amount" class="form-input mt-1 block w-full text-2xl p-3">
+        </div>
+        <button id="reset" class="w-full mt-5 py-3 px-4 border border-transparent rounded-md shadow-sm text-2xl font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+            Reset
+        </button>
+    </div>
+
+    <script>
+        const principal = document.getElementById('principal');
+        const days = document.getElementById('days');
+        const rate = document.getElementById('rate');
+        const total = document.getElementById('total');
+        const reset = document.getElementById('reset');
+        const radios = document.getElementsByName('calculate');
+
+        let calculationTarget = '';
+
+        // Listen for radio selection
+        for (let i = 0; i < radios.length; i++) {
+            radios[i].addEventListener('change', function() {
+                calculationTarget = this.value;
+            });
+        }
+
+        // Calculate total amount
+        const calcValue = () => {
+            const p = parseFloat(principal.value);
+            const r = parseFloat(rate.value) / 100;
+            const t = parseFloat(days.value);
+            const totalAmount = p * Math.pow((1 + r), t);
+
+            switch(calculationTarget) {
+                case 'principal':
+                    principal.value = (total.value / Math.pow((1 + r), t)).toFixed(2);
+                    break;
+                case 'days':
+                    days.value = Math.log(total.value / p) / Math.log(1 + r);
+                    break;
+                case 'rate':
+                    rate.value = Math.pow((total.value / p), (1 / t)) - 1;
+                    break;
+                case 'total':
+                    total.value = totalAmount.toFixed(2);
+                    break;
+            }
+        };
+
+        // Add event listeners
+        principal.addEventListener('input', calcValue);
+        days.addEventListener('input', calcValue);
+        rate.addEventListener('input', calcValue);
+        total.addEventListener('input', calcValue);
+
+        // Reset fields
+        reset.addEventListener('click', () => {
+            principal.value = '';
+            days.value = '';
+            rate.value = '';
+            total.value = '';
+            for(let i = 0; i < radios.length; i++) {
+                radios[i].checked = false;
+            }
+            calculationTarget = '';
+        });
+    </script>
+</body>
+</html>
