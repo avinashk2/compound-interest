@@ -82,7 +82,7 @@
                     days.value = Math.log(total.value / p) / Math.log(1 + r);
                     break;
                 case 'rate':
-                    let totalAmount = parseFloat(total.value);
+                    totalAmount = parseFloat(total.value);
                     rate.value = ((Math.pow(totalAmount / p, 1 / t) - 1) * 100).toFixed(2);
                     break;
                 case 'total':
@@ -90,6 +90,7 @@
                     total.value = totalAmount.toFixed(2);
                     break;
             }
+
         };
     
         // Add event listeners
