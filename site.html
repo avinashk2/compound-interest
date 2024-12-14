@@ -78,9 +78,6 @@
 
     <!-- External JS Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.2/FileSaver.min.js"></script>
-
-    <!-- JavaScript Code -->
     <script>
         // DOM Elements
         const principalInput = document.getElementById('principal');
@@ -91,45 +88,25 @@
         const resetBtn = document.getElementById('reset');
         const downloadBtn = document.getElementById('download');
 
-        let calculationTarget = null; // Track which field is being calculated
+        let calculationTarget = null;
 
-        // Disable the target field based on the selected calculation
         const updateDisabledField = () => {
             const inputs = [principalInput, timeInput, rateInput, totalInput];
-
             inputs.forEach(input => {
                 input.classList.remove('disabled-field');
                 input.disabled = false;
             });
-
-            switch (calculationTarget) {
-                case "principal":
-                    principalInput.classList.add('disabled-field');
-                    principalInput.disabled = true;
-                    break;
-                case "time":
-                    timeInput.classList.add('disabled-field');
-                    timeInput.disabled = true;
-                    break;
-                case "rate":
-                    rateInput.classList.add('disabled-field');
-                    rateInput.disabled = true;
-                    break;
-                case "total":
-                    totalInput.classList.add('disabled-field');
-                    totalInput.disabled = true;
-                    break;
-                default:
-                    break;
+            if (calculationTarget) {
+                const targetInput = document.getElementById(calculationTarget);
+                targetInput.classList.add('disabled-field');
+                targetInput.disabled = true;
             }
         };
 
-        // Reinitialize floating labels after programmatically updating values
         const updateFloatingLabels = () => {
-            M.updateTextFields();
+            M.updateTextFields(); // Ensures labels float correctly
         };
 
-        // Radio Button Event Listener
         document.querySelectorAll('input[name="calculation"]').forEach(radio => {
             radio.addEventListener('change', function () {
                 calculationTarget = this.value;
@@ -168,41 +145,41 @@
             switch (calculationTarget) {
                 case "principal":
                     if (rate > 0 && time > 0 && total > 0) {
-                        principalInput.value = (total / Math.pow(1 + rate, time)).toFixed(2);
+                        principalInput.value = Math.floor(total / Math.pow(1 + rate, time));
                         flashField(principalInput);
                     } else {
-                        alert("Please provide valid Time, Rate, and Total Amount.");
+                        alert("Provide valid Time, Rate, and Total Amount.");
                     }
                     break;
                 case "time":
                     if (principal > 0 && rate > 0 && total > 0) {
-                        timeInput.value = (Math.log(total / principal) / Math.log(1 + rate)).toFixed(2);
+                        timeInput.value = Math.floor(Math.log(total / principal) / Math.log(1 + rate));
                         flashField(timeInput);
                     } else {
-                        alert("Please provide valid Principal, Rate, and Total Amount.");
+                        alert("Provide valid Principal, Rate, and Total Amount.");
                     }
                     break;
                 case "rate":
                     if (principal > 0 && time > 0 && total > 0) {
-                        rateInput.value = ((Math.pow(total / principal, 1 / time) - 1) * 100).toFixed(2);
+                        rateInput.value = Math.floor((Math.pow(total / principal, 1 / time) - 1) * 100);
                         flashField(rateInput);
                     } else {
-                        alert("Please provide valid Principal, Time, and Total Amount.");
+                        alert("Provide valid Principal, Time, and Total Amount.");
                     }
                     break;
                 case "total":
                     if (principal > 0 && rate > 0 && time > 0) {
-                        totalInput.value = (principal * Math.pow(1 + rate, time)).toFixed(2);
+                        totalInput.value = Math.floor(principal * Math.pow(1 + rate, time));
                         flashField(totalInput);
                     } else {
-                        alert("Please provide valid Principal, Time, and Rate.");
+                        alert("Provide valid Principal, Time, and Rate.");
                     }
                     break;
                 default:
                     alert("Invalid selection.");
             }
 
-            updateFloatingLabels(); // Ensure labels float properly after updates
+            updateFloatingLabels();
         };
 
         const resetInputs = () => {
@@ -213,11 +190,41 @@
             });
             document.querySelectorAll('input[name="calculation"]').forEach(radio => radio.checked = false);
             calculationTarget = null;
-            updateFloatingLabels(); // Ensure labels reset correctly
+            updateFloatingLabels();
+        };
+
+        const downloadCSV = () => {
+            const principal = parseFloat(principalInput.value) || 0;
+            const rate = parseFloat(rateInput.value) / 100 || 0;
+            const time = parseInt(timeInput.value) || 0;
+
+            if (principal <= 0 || rate <= 0 || time <= 0) {
+                alert("Enter valid Principal, Rate, and Time values.");
+                return;
+            }
+
+            let csvContent = "Year,Interest,Balance\n";
+            let balance = principal;
+
+            for (let year = 1; year <= time; year++) {
+                const interest = Math.floor(balance * rate);
+                balance += interest;
+                csvContent += `${year},${interest},${balance}\n`;
+            }
+
+            const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "interest_calculator.csv";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(link.href);
         };
 
         calculateBtn.addEventListener('click', calculate);
         resetBtn.addEventListener('click', resetInputs);
+        downloadBtn.addEventListener('click', downloadCSV);
     </script>
 </body>
 </html>
