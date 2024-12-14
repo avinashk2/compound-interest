@@ -4,190 +4,220 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Interest Calculator</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
     <style>
-        .input-field input:focus + label {
+        .flash {
+            background-color: rgba(255, 255, 0, 0.5);
+            transition: background-color 0.5s ease;
+        }
+        .input-field input:focus + label, .input-field input.valid + label {
             color: #1565c0 !important;
         }
-        .input-field input:focus {
+        .input-field input:focus, .input-field input.valid {
             border-bottom: 1px solid #1565c0 !important;
             box-shadow: 0 1px 0 0 #1565c0 !important;
         }
-        .flash {
-            background-color: rgba(255, 255, 0, 0.5);
-            transition: background-color 1s;
+        .disabled-field {
+            background-color: #f0f0f0 !important;
+            pointer-events: none;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="row">
-            <div class="col s12 m8 offset-m2 l6 offset-l3">
-                <h2 class="center-align">Interest Calculator</h2>
-                <div class="row">
-                    <div class="input-field col s12">
-                        <p>Select the value you want to calculate:</p>
-                        <p>
-                            <label>
-                                <input class="with-gap" type="radio" id="calc-principal" name="calculate" value="principal">
-                                <span>Principal Amount</span>
-                            </label>
-                        </p>
-                        <p>
-                            <label>
-                                <input class="with-gap" type="radio" id="calc-time" name="calculate" value="time">
-                                <span>Time</span>
-                            </label>
-                        </p>
-                        <p>
-                            <label>
-                                <input class="with-gap" type="radio" id="calc-rate" name="calculate" value="rate">
-                                <span>Compound Interest Rate</span>
-                            </label>
-                        </p>
-                        <p>
-                            <label>
-                                <input class="with-gap" type="radio" id="calc-total" name="calculate" value="total">
-                                <span>Total Amount</span>
-                            </label>
-                        </p>
-                    </div>
+            <div class="col s12 m8 offset-m2">
+                <h3 class="center-align">Interest Calculator</h3>
+
+                <!-- Radio Button Selection -->
+                <div class="radio-container">
+                    <p><b>Choose what to calculate:</b></p>
+                    <label>
+                        <input name="calculation" type="radio" value="principal" />
+                        <span>Principal Amount</span>
+                    </label>
+                    <label>
+                        <input name="calculation" type="radio" value="time" />
+                        <span>Time (Years)</span>
+                    </label>
+                    <label>
+                        <input name="calculation" type="radio" value="rate" />
+                        <span>Interest Rate (%)</span>
+                    </label>
+                    <label>
+                        <input name="calculation" type="radio" value="total" />
+                        <span>Total Amount</span>
+                    </label>
                 </div>
-                <div class="row">
-                    <div class="input-field col s12">
-                        <input type="number" id="principal" placeholder="Principal Amount">
-                        <label for="principal">Principal Amount</label>
-                    </div>
+
+                <!-- Input Fields -->
+                <div class="input-field">
+                    <input type="number" id="principal" class="validate">
+                    <label for="principal">Principal Amount</label>
                 </div>
-                <div class="row">
-                    <div class="input-field col s12">
-                        <input type="number" id="time" placeholder="Time">
-                        <label for="time">Time</label>
-                    </div>
+                <div class="input-field">
+                    <input type="number" id="time" class="validate">
+                    <label for="time">Time (Years)</label>
                 </div>
-                <div class="row">
-                    <div class="input-field col s12">
-                        <input type="number" id="rate" placeholder="Compound Interest Rate (%)">
-                        <label for="rate">Compound Interest Rate (%)</label>
-                    </div>
+                <div class="input-field">
+                    <input type="number" id="rate" class="validate">
+                    <label for="rate">Compound Interest Rate (%)</label>
                 </div>
-                <div class="row">
-                    <div class="input-field col s12">
-                        <input type="number" id="total" placeholder="Total Amount">
-                        <label for="total">Total Amount</label>
-                    </div>
+                <div class="input-field">
+                    <input type="number" id="total" class="validate">
+                    <label for="total">Total Amount</label>
                 </div>
-                <div class="row">
-                    <div class="col s12">
-                        <button id="reset" class="waves-effect waves-light btn-large blue darken-4 w-full">Reset</button>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col s12">
-                        <button id="download" class="waves-effect waves-light btn-large blue darken-4 w-full">Download CSV</button>
-                    </div>
-                </div>
+
+                <!-- Action Buttons -->
+                <button id="calculate" class="waves-effect waves-light btn blue">Calculate</button>
+                <button id="reset" class="waves-effect waves-light btn grey">Reset</button>
+                <button id="download" class="waves-effect waves-light btn green">Download CSV</button>
             </div>
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/10.4.0/math.min.js"></script>
+    <!-- External JS Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.2/FileSaver.min.js"></script>
+
+    <!-- JavaScript Code -->
     <script>
-        const principal = document.getElementById('principal');
-        const time = document.getElementById('time');
-        const rate = document.getElementById('rate');
-        const total = document.getElementById('total');
-        const reset = document.getElementById('reset');
-        const radios = document.getElementsByName('calculate');
+        // DOM Elements
+        const principalInput = document.getElementById('principal');
+        const timeInput = document.getElementById('time');
+        const rateInput = document.getElementById('rate');
+        const totalInput = document.getElementById('total');
+        const calculateBtn = document.getElementById('calculate');
+        const resetBtn = document.getElementById('reset');
         const downloadBtn = document.getElementById('download');
-    
-        let calculationTarget = '';
-    
-        for (let i = 0; i < radios.length; i++) {
-            radios[i].addEventListener('change', function() {
-                calculationTarget = this.value;
+
+        let calculationTarget = null; // Track which field is being calculated
+
+        // Disable the target field based on the selected calculation
+        const updateDisabledField = () => {
+            const inputs = [principalInput, timeInput, rateInput, totalInput];
+
+            inputs.forEach(input => {
+                input.classList.remove('disabled-field');
+                input.disabled = false;
             });
-        }
-    
-        const calcValue = () => {
-            const p = parseFloat(principal.value);
-            const r = parseFloat(rate.value) / 100;
-            const t = parseFloat(time.value);
-            let totalAmount;
-    
-            switch(calculationTarget) {
-                case 'principal':
-                    principal.value = Math.floor((total.value / Math.pow((1 + r), t))).toFixed(0);
-                    flash(principal);
+
+            switch (calculationTarget) {
+                case "principal":
+                    principalInput.classList.add('disabled-field');
+                    principalInput.disabled = true;
                     break;
-                case 'time':
-                    time.value = (Math.log(total.value / p) / Math.log(1 + r)).toFixed(2);
-                    flash(time);
+                case "time":
+                    timeInput.classList.add('disabled-field');
+                    timeInput.disabled = true;
                     break;
-                case 'rate':
-                    rate.value = ((Math.pow((total.value / p), 1 / t) - 1) * 100).toFixed(2);
-                    flash(rate);
+                case "rate":
+                    rateInput.classList.add('disabled-field');
+                    rateInput.disabled = true;
                     break;
-                case 'total':
-                    totalAmount = p * Math.pow((1 + r), t);
-                    total.value = Math.floor(totalAmount).toFixed(0);
-                    flash(total);
+                case "total":
+                    totalInput.classList.add('disabled-field');
+                    totalInput.disabled = true;
+                    break;
+                default:
                     break;
             }
         };
-    
-        const flash = (element) => {
-            element.classList.add('flash');
-            setTimeout(() => {
-                element.classList.remove('flash');
-            }, 1000);
+
+        // Reinitialize floating labels after programmatically updating values
+        const updateFloatingLabels = () => {
+            M.updateTextFields();
         };
-    
-        principal.addEventListener('input', calcValue);
-        time.addEventListener('input', calcValue);
-        rate.addEventListener('input', calcValue);
-        total.addEventListener('input', calcValue);
-    
-        reset.addEventListener('click', () => {
-            principal.value = '';
-            time.value = '';
-            rate.value = '';
-            total.value = '';
-            for(let i = 0; i < radios.length; i++) {
-                radios[i].checked = false;
-            }
-            calculationTarget = '';
+
+        // Radio Button Event Listener
+        document.querySelectorAll('input[name="calculation"]').forEach(radio => {
+            radio.addEventListener('change', function () {
+                calculationTarget = this.value;
+                updateDisabledField();
+            });
         });
 
-        downloadBtn.addEventListener('click', () => {
-            const p = parseFloat(principal.value);
-            const r = parseFloat(rate.value) / 100;
-            const t = parseFloat(time.value);
-            let csvContent = "data:text/csv;charset=utf-8,";
-            csvContent += "S. No.,Earnings,Balance\n";
+        const flashField = (field) => {
+            field.classList.add('flash');
+            setTimeout(() => field.classList.remove('flash'), 500);
+        };
 
-            let balance = p;
-            for (let i = 1; i <= t; i++) {
-                let interest = balance * r;
-                balance += interest;
-                csvContent += `${i},${interest.toFixed(2)},${balance.toFixed(2)}\n`;
+        const validateInputs = (inputs) => {
+            for (let input of inputs) {
+                if (input.value !== '' && parseFloat(input.value) <= 0) {
+                    alert("All values must be positive numbers.");
+                    return false;
+                }
+            }
+            return true;
+        };
+
+        const calculate = () => {
+            if (!calculationTarget) {
+                alert("Please select an option to calculate.");
+                return;
             }
 
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", "interest_calculator_data.csv");
-            document.body.appendChild(link);
-            link.click();
-        });
+            const principal = parseFloat(principalInput.value) || 0;
+            const time = parseFloat(timeInput.value) || 0;
+            const rate = parseFloat(rateInput.value) / 100 || 0;
+            const total = parseFloat(totalInput.value) || 0;
+
+            if (!validateInputs([principalInput, timeInput, rateInput, totalInput])) return;
+
+            switch (calculationTarget) {
+                case "principal":
+                    if (rate > 0 && time > 0 && total > 0) {
+                        principalInput.value = (total / Math.pow(1 + rate, time)).toFixed(2);
+                        flashField(principalInput);
+                    } else {
+                        alert("Please provide valid Time, Rate, and Total Amount.");
+                    }
+                    break;
+                case "time":
+                    if (principal > 0 && rate > 0 && total > 0) {
+                        timeInput.value = (Math.log(total / principal) / Math.log(1 + rate)).toFixed(2);
+                        flashField(timeInput);
+                    } else {
+                        alert("Please provide valid Principal, Rate, and Total Amount.");
+                    }
+                    break;
+                case "rate":
+                    if (principal > 0 && time > 0 && total > 0) {
+                        rateInput.value = ((Math.pow(total / principal, 1 / time) - 1) * 100).toFixed(2);
+                        flashField(rateInput);
+                    } else {
+                        alert("Please provide valid Principal, Time, and Total Amount.");
+                    }
+                    break;
+                case "total":
+                    if (principal > 0 && rate > 0 && time > 0) {
+                        totalInput.value = (principal * Math.pow(1 + rate, time)).toFixed(2);
+                        flashField(totalInput);
+                    } else {
+                        alert("Please provide valid Principal, Time, and Rate.");
+                    }
+                    break;
+                default:
+                    alert("Invalid selection.");
+            }
+
+            updateFloatingLabels(); // Ensure labels float properly after updates
+        };
+
+        const resetInputs = () => {
+            [principalInput, timeInput, rateInput, totalInput].forEach(input => {
+                input.value = '';
+                input.classList.remove('disabled-field');
+                input.disabled = false;
+            });
+            document.querySelectorAll('input[name="calculation"]').forEach(radio => radio.checked = false);
+            calculationTarget = null;
+            updateFloatingLabels(); // Ensure labels reset correctly
+        };
+
+        calculateBtn.addEventListener('click', calculate);
+        resetBtn.addEventListener('click', resetInputs);
     </script>
-
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 </body>
 </html>
-
-
