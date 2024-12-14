@@ -3,22 +3,78 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interest Calculator</title>
+    <title>Luxury Interest Calculator</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
     <style>
+        body {
+            background-color: #1a1a1a;
+            color: #f0e6d2; /* Goldish white for text */
+            font-family: 'Georgia', serif;
+            margin: 0;
+            padding: 0;
+        }
+        h3 {
+            color: #f1c40f; /* Gold */
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        .container {
+            margin-top: 50px;
+        }
+        .card-panel {
+            background: #2c2c2c;
+            border: 1px solid #f1c40f; /* Gold border */
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(241, 196, 15, 0.3);
+            padding: 25px;
+        }
+        label span {
+            color: #f0e6d2;
+            font-weight: bold;
+        }
+        label {
+            color: #b2b2b2; /* Light Gray */
+        }
+        input {
+            color: #f0e6d2 !important;
+        }
+        .input-field input:focus + label, .input-field input.valid + label {
+            color: #f1c40f !important;
+        }
+        .input-field input:focus, .input-field input.valid {
+            border-bottom: 1px solid #f1c40f !important;
+            box-shadow: 0 1px 0 0 #f1c40f !important;
+        }
+        .radio-container p {
+            color: #f1c40f;
+            font-weight: bold;
+        }
+        button {
+            width: 100%;
+            margin-top: 15px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(241, 196, 15, 0.6);
+        }
+        .btn.blue {
+            background-color: #2980b9 !important;
+            color: white;
+        }
+        .btn.grey {
+            background-color: #7f8c8d !important;
+        }
+        .btn.green {
+            background-color: #27ae60 !important;
+        }
         .flash {
             background-color: rgba(255, 255, 0, 0.5);
             transition: background-color 0.5s ease;
         }
-        .input-field input:focus + label, .input-field input.valid + label {
-            color: #1565c0 !important;
-        }
-        .input-field input:focus, .input-field input.valid {
-            border-bottom: 1px solid #1565c0 !important;
-            box-shadow: 0 1px 0 0 #1565c0 !important;
-        }
         .disabled-field {
-            background-color: #f0f0f0 !important;
+            background-color: #4c4c4c !important;
             pointer-events: none;
         }
     </style>
@@ -27,51 +83,63 @@
     <div class="container">
         <div class="row">
             <div class="col s12 m8 offset-m2">
-                <h3 class="center-align">Interest Calculator</h3>
+                <div class="card-panel">
+                    <h3 class="center-align">Interest Calculator</h3>
 
-                <!-- Radio Button Selection -->
-                <div class="radio-container">
-                    <p><b>Choose what to calculate:</b></p>
-                    <label>
-                        <input name="calculation" type="radio" value="principal" />
-                        <span>Principal Amount</span>
-                    </label>
-                    <label>
-                        <input name="calculation" type="radio" value="time" />
-                        <span>Time (Years)</span>
-                    </label>
-                    <label>
-                        <input name="calculation" type="radio" value="rate" />
-                        <span>Interest Rate (%)</span>
-                    </label>
-                    <label>
-                        <input name="calculation" type="radio" value="total" />
-                        <span>Total Amount</span>
-                    </label>
-                </div>
+                    <!-- Radio Button Selection -->
+                    <div class="radio-container">
+                        <p class="center-align"><b>Choose what to calculate:</b></p>
+                        <div class="row">
+                            <div class="col s6">
+                                <label>
+                                    <input name="calculation" type="radio" value="principal" />
+                                    <span>Principal Amount</span>
+                                </label>
+                            </div>
+                            <div class="col s6">
+                                <label>
+                                    <input name="calculation" type="radio" value="time" />
+                                    <span>Time (Years)</span>
+                                </label>
+                            </div>
+                            <div class="col s6">
+                                <label>
+                                    <input name="calculation" type="radio" value="rate" />
+                                    <span>Interest Rate (%)</span>
+                                </label>
+                            </div>
+                            <div class="col s6">
+                                <label>
+                                    <input name="calculation" type="radio" value="total" />
+                                    <span>Total Amount</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
 
-                <!-- Input Fields -->
-                <div class="input-field">
-                    <input type="number" id="principal" class="validate">
-                    <label for="principal">Principal Amount</label>
-                </div>
-                <div class="input-field">
-                    <input type="number" id="time" class="validate">
-                    <label for="time">Time (Years)</label>
-                </div>
-                <div class="input-field">
-                    <input type="number" id="rate" class="validate">
-                    <label for="rate">Compound Interest Rate (%)</label>
-                </div>
-                <div class="input-field">
-                    <input type="number" id="total" class="validate">
-                    <label for="total">Total Amount</label>
-                </div>
+                    <!-- Input Fields -->
+                    <div class="input-field">
+                        <input type="number" id="principal" class="validate">
+                        <label for="principal">Principal Amount</label>
+                    </div>
+                    <div class="input-field">
+                        <input type="number" id="time" class="validate">
+                        <label for="time">Time (Years)</label>
+                    </div>
+                    <div class="input-field">
+                        <input type="number" id="rate" class="validate">
+                        <label for="rate">Compound Interest Rate (%)</label>
+                    </div>
+                    <div class="input-field">
+                        <input type="number" id="total" class="validate">
+                        <label for="total">Total Amount</label>
+                    </div>
 
-                <!-- Action Buttons -->
-                <button id="calculate" class="waves-effect waves-light btn blue">Calculate</button>
-                <button id="reset" class="waves-effect waves-light btn grey">Reset</button>
-                <button id="download" class="waves-effect waves-light btn green">Download CSV</button>
+                    <!-- Action Buttons -->
+                    <button id="calculate" class="waves-effect waves-light btn blue">Calculate</button>
+                    <button id="reset" class="waves-effect waves-light btn grey">Reset</button>
+                    <button id="download" class="waves-effect waves-light btn green">Download CSV</button>
+                </div>
             </div>
         </div>
     </div>
@@ -79,7 +147,7 @@
     <!-- External JS Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
     <script>
-        // DOM Elements
+        // JS functionality remains the same as provided
         const principalInput = document.getElementById('principal');
         const timeInput = document.getElementById('time');
         const rateInput = document.getElementById('rate');
