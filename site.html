@@ -3,6 +3,269 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compound Interest Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom styling for disabled input fields */
+        input:disabled {
+            background-color: #f3f4f6; /* Tailwind gray-100 */
+            color: #6b7280; /* Tailwind gray-500 */
+            cursor: not-allowed;
+            border-color: #d1d5db; /* Tailwind gray-300 */
+        }
+        /* Custom message box styling */
+        #messageBox {
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+            transform: translateY(10px);
+        }
+        #messageBox.opacity-100 {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 min-h-screen flex flex-col items-center justify-center p-4 selection:bg-blue-500 selection:text-white">
+
+    <div class="bg-white shadow-xl rounded-xl p-6 md:p-10 w-full max-w-lg">
+        <header class="mb-6 md:mb-8 text-center">
+            <h1 class="text-3xl md:text-4xl font-bold text-blue-600">Compound Interest Calculator</h1>
+            <p class="text-gray-600 mt-2">Enter any three values to calculate the fourth (compounded annually).</p>
+        </header>
+
+        <main>
+            <div class="mb-6">
+                <label for="calculateTarget" class="block text-sm font-medium text-gray-700 mb-1">Calculate:</label>
+                <select id="calculateTarget" class="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors duration-150">
+                    <option value="amount" selected>Total Amount (A)</option>
+                    <option value="principal">Principal (P)</option>
+                    <option value="rate">Interest Rate (R %)</option>
+                    <option value="time">Time (T Years)</option>
+                </select>
+            </div>
+
+            <form id="interestForm" class="space-y-5">
+                <div class="input-group">
+                    <label for="principal" class="block text-sm font-medium text-gray-700 mb-1">Principal (P):</label>
+                    <input type="number" id="principal" placeholder="e.g., 1000" class="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors duration-150">
+                </div>
+
+                <div class="input-group">
+                    <label for="rate" class="block text-sm font-medium text-gray-700 mb-1">Annual Interest Rate (R %):</label>
+                    <input type="number" id="rate" placeholder="e.g., 5 for 5%" class="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors duration-150">
+                </div>
+
+                <div class="input-group">
+                    <label for="time" class="block text-sm font-medium text-gray-700 mb-1">Time (T in Years):</label>
+                    <input type="number" id="time" placeholder="e.g., 2" class="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors duration-150">
+                </div>
+
+                <div class="input-group">
+                    <label for="amount" class="block text-sm font-medium text-gray-700 mb-1">Total Amount (A):</label>
+                    <input type="number" id="amount" placeholder="Result" class="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors duration-150">
+                </div>
+
+                <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4 mt-8">
+                    <button type="button" id="calculateButton" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 ease-in-out transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75">
+                        Calculate
+                    </button>
+                    <button type="button" id="clearButton" class="w-full bg-gray-500 hover:bg-gray-600 text-white font-semibold py-3 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 ease-in-out transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-75">
+                        Clear Fields
+                    </button>
+                </div>
+            </form>
+
+            <div id="messageBox" class="mt-6 p-4 rounded-lg text-sm opacity-0 transition-all duration-300 hidden">
+                <span id="messageText"></span>
+                <button id="closeMessageButton" class="ml-4 float-right font-bold hover:text-gray-700">&times;</button>
+            </div>
+        </main>
+
+        <footer class="mt-8 text-center text-xs text-gray-500">
+            <p>&copy; <span id="currentYear"></span> Compound Interest Calculator. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // DOM Elements
+            const principalInput = document.getElementById('principal');
+            const rateInput = document.getElementById('rate');
+            const timeInput = document.getElementById('time');
+            const amountInput = document.getElementById('amount');
+            const calculateTargetSelect = document.getElementById('calculateTarget');
+            const calculateButton = document.getElementById('calculateButton');
+            const clearButton = document.getElementById('clearButton');
+            const messageBox = document.getElementById('messageBox');
+            const messageText = document.getElementById('messageText');
+            const closeMessageButton = document.getElementById('closeMessageButton');
+            document.getElementById('currentYear').textContent = new Date().getFullYear();
+
+            // --- Input State Management ---
+            function updateInputStates() {
+                const target = calculateTargetSelect.value;
+                
+                // Enable all inputs first
+                [principalInput, rateInput, timeInput, amountInput].forEach(input => {
+                    input.disabled = false;
+                    input.classList.remove('bg-gray-100', 'text-gray-500', 'border-gray-300');
+                    input.classList.add('bg-gray-50', 'text-gray-900', 'border-gray-300');
+                });
+                
+                const fields = {
+                    principal: principalInput,
+                    rate: rateInput,
+                    time: timeInput,
+                    amount: amountInput
+                };
+
+                for (const key in fields) {
+                    if (key === target) {
+                        fields[key].disabled = true;
+                        fields[key].placeholder = "Calculated Value";
+                        fields[key].value = ""; 
+                        fields[key].classList.add('bg-gray-100', 'text-gray-500', 'border-gray-300'); // Style for disabled
+                    } else {
+                        // Restore original placeholders
+                        if (key === 'principal') fields[key].placeholder = "e.g., 1000";
+                        if (key === 'rate') fields[key].placeholder = "e.g., 5 for 5%";
+                        if (key === 'time') fields[key].placeholder = "e.g., 2";
+                        if (key === 'amount' && target !== 'amount') fields[key].placeholder = "e.g., 1102.50"; // Example for compound
+                        else if (key === 'amount' && target === 'amount') fields[key].placeholder = "Calculated Value";
+                    }
+                }
+            }
+
+            // --- Message Display ---
+            function showMessage(message, type = 'error') {
+                messageText.textContent = message;
+                messageBox.classList.remove('hidden', 'opacity-0', 'bg-red-100', 'text-red-700', 'border-red-400', 'bg-green-100', 'text-green-700', 'border-green-400', 'bg-blue-100', 'text-blue-700', 'border-blue-400');
+                messageBox.classList.add('opacity-100');
+                messageBox.classList.add('border'); // Add base border class
+                
+                if (type === 'error') {
+                    messageBox.classList.add('bg-red-100', 'text-red-700', 'border-red-400');
+                } else if (type === 'success') {
+                    messageBox.classList.add('bg-green-100', 'text-green-700', 'border-green-400');
+                } else { // info
+                    messageBox.classList.add('bg-blue-100', 'text-blue-700', 'border-blue-400');
+                }
+            }
+
+            function hideMessage() {
+                messageBox.classList.add('opacity-0');
+                setTimeout(() => { 
+                    messageBox.classList.add('hidden');
+                }, 300);
+            }
+            
+            closeMessageButton.addEventListener('click', hideMessage);
+
+            // --- Calculation Logic (Compound Interest) ---
+            function calculate() {
+                hideMessage(); 
+
+                const target = calculateTargetSelect.value;
+                // Get values, ensuring they are parsed as floats
+                const P_val = principalInput.value ? parseFloat(principalInput.value) : NaN;
+                const R_percent_val = rateInput.value ? parseFloat(rateInput.value) : NaN; // Rate as percentage e.g., 5 for 5%
+                const T_val = timeInput.value ? parseFloat(timeInput.value) : NaN;
+                const A_val = amountInput.value ? parseFloat(amountInput.value) : NaN;
+
+                let result;
+                let calculationPerformed = false;
+                const n = 1; // Compounded annually
+
+                try {
+                    if (target === 'amount') {
+                        if (isNaN(P_val) || isNaN(R_percent_val) || isNaN(T_val)) throw new Error("Principal, Rate, and Time must be valid numbers.");
+                        if (P_val < 0 || R_percent_val < 0 || T_val < 0) throw new Error("Principal, Rate, and Time must be non-negative.");
+                        const r_decimal = R_percent_val / 100;
+                        result = P_val * Math.pow((1 + r_decimal / n), n * T_val);
+                        amountInput.value = result.toFixed(2);
+                        calculationPerformed = true;
+                    } else if (target === 'principal') {
+                        if (isNaN(A_val) || isNaN(R_percent_val) || isNaN(T_val)) throw new Error("Amount, Rate, and Time must be valid numbers.");
+                        if (A_val < 0 || R_percent_val < 0 || T_val < 0) throw new Error("Amount, Rate, and Time must be non-negative.");
+                        const r_decimal = R_percent_val / 100;
+                        const denominator = Math.pow((1 + r_decimal / n), n * T_val);
+                        if (denominator === 0) throw new Error("Calculation error: Division by zero. Check inputs.");
+                        result = A_val / denominator;
+                        principalInput.value = result.toFixed(2);
+                        calculationPerformed = true;
+                    } else if (target === 'rate') {
+                        if (isNaN(P_val) || isNaN(A_val) || isNaN(T_val)) throw new Error("Principal, Amount, and Time must be valid numbers.");
+                        if (P_val <= 0 || T_val <= 0) throw new Error("Principal and Time must be positive to calculate Rate.");
+                        if (A_val < P_val && T_val > 0) throw new Error("Amount must be greater than or equal to Principal for a positive interest rate if time is positive.");
+                        if (A_val <=0) throw new Error("Amount must be positive.");
+
+                        // r = n * ((A/P)^(1/(n*t)) - 1)
+                        const base = A_val / P_val;
+                        if (base < 0) throw new Error("Cannot calculate rate: A/P results in a negative base for exponentiation.");
+                        const exponent = 1 / (n * T_val);
+                        result = n * (Math.pow(base, exponent) - 1) * 100; // Convert decimal rate to percentage
+                         if (isNaN(result) || !isFinite(result)) throw new Error("Could not calculate rate. Check inputs (e.g., A must be >= P if T > 0).");
+                        rateInput.value = result.toFixed(2);
+                        calculationPerformed = true;
+                    } else if (target === 'time') {
+                        if (isNaN(P_val) || isNaN(A_val) || isNaN(R_percent_val)) throw new Error("Principal, Amount, and Rate must be valid numbers.");
+                        if (P_val <= 0 || R_percent_val <= 0) throw new Error("Principal and Rate must be positive to calculate Time.");
+                        if (A_val < P_val) throw new Error("Amount must be greater than or equal to Principal for a positive time period.");
+                        if (A_val <= 0) throw new Error("Amount must be positive.");
+                        
+                        const r_decimal = R_percent_val / 100;
+                        // t = ln(A/P) / (n * ln(1 + r/n))
+                        const numerator = Math.log(A_val / P_val);
+                        const denominator = n * Math.log(1 + r_decimal / n);
+                        if (denominator === 0) throw new Error("Calculation error: Division by zero (Rate might be 0 or invalid).");
+                        if (numerator < 0 && denominator > 0 && A_val < P_val) { /* This case is fine if A < P for some reason, but we already check A >= P */ }
+                        else if ((A_val / P_val) <= 0 || (1 + r_decimal / n) <= 0) throw new Error("Invalid inputs for logarithmic calculation (e.g., A/P or 1+r/n is not positive).");
+                        
+                        result = numerator / denominator;
+                        if (isNaN(result) || !isFinite(result)) throw new Error("Could not calculate time. Check inputs.");
+                        timeInput.value = result.toFixed(2);
+                        calculationPerformed = true;
+                    }
+
+                    if (calculationPerformed) {
+                        showMessage(`Successfully calculated ${target.charAt(0).toUpperCase() + target.slice(1)}.`, 'success');
+                    }
+
+                } catch (error) {
+                    showMessage(error.message, 'error');
+                    // Clear the target field if calculation failed
+                    const fields = { principal: principalInput, rate: rateInput, time: timeInput, amount: amountInput };
+                    if (fields[target]) fields[target].value = '';
+                }
+            }
+
+            // --- Clear Fields ---
+            function clearFields() {
+                [principalInput, rateInput, timeInput, amountInput].forEach(input => input.value = '');
+                hideMessage();
+                updateInputStates(); 
+                principalInput.focus(); 
+            }
+
+            // --- Event Listeners ---
+            calculateTargetSelect.addEventListener('change', updateInputStates);
+            calculateButton.addEventListener('click', calculate);
+            clearButton.addEventListener('click', clearFields);
+
+            // Initial setup
+            updateInputStates();
+        });
+    </script>
+
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Luxury Interest Calculator</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
     <style>
